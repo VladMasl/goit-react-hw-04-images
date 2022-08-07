@@ -1,0 +1,7 @@
+.LodContainer{ 
+    display: flex;  
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
