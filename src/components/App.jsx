@@ -1,25 +1,18 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import { ToastContainer } from 'react-toastify';
- import 'react-toastify/dist/ReactToastify.css';
- import s from '../components/App.module.css';
- 
-class App extends Component {
-  state = {
-    searchName: '',
-  };
+import 'react-toastify/dist/ReactToastify.css';
+import s from '../components/App.module.css';
 
-  hendleFormSubmit = searchName => {
-    this.setState({ searchName });
-  };
+function App() {
+  const [searchName, setSearchName] = useState('');
 
-  render() {
-    return (
-      <div className={s.appStyles}>
-        <Searchbar hendleFormSubmit={this.hendleFormSubmit} />
-        <ImageGallery searchName={this.state.searchName} />
-        <ToastContainer
+  return (
+    <div className={s.appStyles}>
+      <Searchbar hendleFormSubmit={setSearchName} />
+      <ImageGallery searchName={searchName} />
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -28,10 +21,10 @@ class App extends Component {
         rtl={false}
         pauseOnFocusLoss
         draggable
-        pauseOnHover />
-      </div>
-    );
-  }
+        pauseOnHover
+      />
+    </div>
+  );
 }
 
 export default App;

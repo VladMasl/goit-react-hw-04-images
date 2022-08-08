@@ -1,6 +1,6 @@
 const API_KEY = '28547634-4116209d61ca001bf4b221e9c';
 
-const dataRequestApi = ({ page, searchName }) => {
+const dataRequestApi = ( page, searchName ) => {
   const searchParams = new URLSearchParams({
     q: searchName,
     page,

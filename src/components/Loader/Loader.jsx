@@ -1,25 +1,21 @@
-import { Component } from 'react';
 import s from './Loader.module.css';
 import { Watch } from 'react-loader-spinner';
 
-
-class Loader extends Component {
-  render() {
-    return (
-      <div className={s.LodContainer}>
-        <Watch
-          height="80"
-          width="80"
-          radius="48"
-          color="rgba(0, 255, 234, 0.815)"
-          ariaLabel="watch-loading"
-          wrapperStyle={{}}
-          wrapperClassName=""
-          visible={true}
-        />
-      </div>
-    );
-  }
+function Loader() {
+  return (
+    <div className={s.LodContainer}>
+      <Watch
+        height="80"
+        width="80"
+        radius="48"
+        color="rgba(0, 255, 234, 0.815)"
+        ariaLabel="watch-loading"
+        wrapperStyle={{}}
+        wrapperClassName=""
+        visible={true}
+      />
+    </div>
+  );
 }
 
 export default Loader;

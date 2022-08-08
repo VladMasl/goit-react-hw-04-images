@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api from '../../ApiSearch/Api';
 import Modal from 'components/Modal/Modal';
@@ -7,131 +7,106 @@ import Loader from 'components/Loader/Loader';
 import Button from 'components/Button/Button';
 import s from './ImageGallery.module.css';
 
-class ImageGallery extends Component {
-  state = {
-    data: [],
-    modalInfo: false,
-    largeImageURL: '',
-    totalHits: 0,
-    page: 1,
-    status: 'idle',
+function ImageGallery({ searchName }) {
+  const [data, setData] = useState([]);
+  const [modalInfo, setModalInfo] = useState(false);
+  const [largeImageURL, seyLargeImageURL] = useState('');
+  const [totalHits, setTotalHits] = useState(0);
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
+
+  const reset = () => {
+    setData([]);
+    setTotalHits(0);
+    setPage(1);
   };
 
-  reset = () => {
-    this.setState({ data: [], totalHits: 0, page: 1 });
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const { page } = this.state;
-    if (prevProps.searchName !== this.props.searchName) {
-      this.reset();
-      this.setState({ status: 'pending' });
-      this.dataRequest();
-    }
-
-    if (prevState.page !== page) {
-      this.setState({ status: 'pending' });
-
-      this.moreDataRequest();
-    }
-
-    if (page > 1) {
-      this.handleScroll();
-    }
-  }
-
-  async moreDataRequest() {
-    const { page } = this.state;
-    const { searchName } = this.props;
-
-    await api
-      .dataRequestApi({ page, searchName })
+  // eslint-disable-next-line
+  const dataRequest = () => {
+    setStatus('pending');
+    api
+      .dataRequestApi(page, searchName)
       .then(response => {
         if (response.ok) {
           return response.json();
         }
         return Promise.reject(new Error(`!!Erro!!`));
       })
-
-      .then(data =>
-        this.setState(prevState => ({
-          data: [...prevState.data, ...data.hits],
-          totalHits: data.totalHits,
-          status: 'resolved',
-        }))
-      )
-
-      .catch(error => this.setState({ error, status: 'rejected' }));
-  }
-
-  dataRequest() {
-    const { page } = this.state;
-    const { searchName } = this.props;
-
-    api
-      .dataRequestApi({ page, searchName })
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-        return Promise.reject(new Error(`!!${searchName}!!`));
+      .then(data => {
+        setData(prev => [...prev, ...data.hits]);
+        setTotalHits(data.totalHits);
+        setStatus('resolved');
       })
+      .catch(error => {
+        setError(error);
+        setStatus('rejected');
+      });
+  };
 
-      .then(data =>
-        this.setState({
-          data: data.hits,
-          totalHits: data.totalHits,
-          status: 'resolved',
-        })
-      )
+  const updatePage = () => {
+    setPage(prev => page + 1);
+  };
 
-      .catch(error => this.setState({ error, status: 'rejected' }));
+  const handleScroll = () => {
+    if (page > 1) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const toggleModal = largeImageURL => {
+    setModalInfo(!modalInfo);
+    seyLargeImageURL(largeImageURL);
+  };
+
+  const totalPage = Math.ceil(totalHits / 12);
+
+  useEffect(() => {
+    if (!searchName) {
+      return;
+    }
+    if (page === 1) {
+      dataRequest();
+    }
+    reset();
+
+    // eslint-disable-next-line
+  }, [searchName]);
+
+  useEffect(() => {
+    if (!searchName) {
+      return;
+    }
+
+    dataRequest();
+    handleScroll();
+    // eslint-disable-next-line
+  }, [page]);
+
+  if (status === 'idle') {
+    return <h1>Enter a request for the desired image</h1>;
   }
-
-  handleScroll = () => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
-  };
-
-  updatePage = () => {
-    this.setState(prev => ({ page: prev.page + 1 }));
-  };
-
-  toggleModal = largeImageURL => {
-    this.setState(({ modalInfo }) => ({
-      modalInfo: !modalInfo,
-      largeImageURL: largeImageURL,
-    }));
-  };
-
-  render() {
-    const { data, error, status, modalInfo, largeImageURL, page, totalHits } =
-      this.state;
-    const totalPage = Math.ceil(totalHits / 12);
-    if (status === 'idle') {
-      return <h1>Enter a request for the desired image</h1>;
-    }
-    if (status === 'pending') {
-      return <Loader />;
-    }
-    if (status === 'rejected') {
-      return toast.info(error.message);
-    }
-    if (status === 'resolved') {
-      return (
-        <>
-          <ul className={s.Gallery}>
-            <ImageGalleryItem data={data} toggleModal={this.toggleModal} />
-          </ul>
-          {totalPage > page && <Button cbOnClick={this.updatePage} />}
-          {modalInfo && (
-            <Modal ElementImgModal={largeImageURL} onClose={this.toggleModal} />
-          )}
-        </>
-      );
-    }
+  if (status === 'pending') {
+    return <Loader />;
+  }
+  if (status === 'rejected') {
+    return toast.info(error.message);
+  }
+  if (status === 'resolved') {
+    return (
+      <>
+        <ul className={s.Gallery}>
+          <ImageGalleryItem data={data} toggleModal={toggleModal} />
+        </ul>
+        {totalPage > page && <Button cbOnClick={updatePage} />}
+        {modalInfo && (
+          <Modal ElementImgModal={largeImageURL} onClose={toggleModal} />
+        )}
+      </>
+    );
   }
 }
 
